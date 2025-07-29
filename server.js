@@ -1,10 +1,21 @@
 const express = require("express");
+
 const app = express();
-const cors = require("cors");
 const port = 3001;
-app.use(cors());
+app.use(express.json());
+
+app.set("view engine", "ejs");
+
 app.get("/", (req, res) => {
-  res.json({ message: "Hello from Node.js Server!" });
+  res.render("index");
+});
+
+app.get("/contact", (req, res) => {
+  res.render("contact");
+});
+
+app.use((req, res) => {
+  res.status(404).render("404 - Page Not Found");
 });
 
 app.listen(port, () => {
