@@ -2,7 +2,12 @@ const express = require("express");
 
 const app = express();
 const port = 3001;
+
+const todoRoutes = require("./routes/todo.js");
+const { todos } = require("./routes/todo.js");
+
 app.use(express.json());
+app.use('/todos', todoRoutes);
 
 app.set("view engine", "ejs");
 
