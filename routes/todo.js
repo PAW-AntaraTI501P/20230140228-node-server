@@ -1,53 +1,65 @@
-// todo.js
 const express = require("express");
 const router = express.Router();
 
-// Data dummy
+// In-memory database (shared)
 let todos = [
-  { id: 1, task: "Belajar Node.js", },
-  { id: 2, task: "Membuat API", },
+  { id: 1, task: "Belajar Node.js", completed: false },
+  { id: 2, task: "Buat aplikasi TODO", completed: false },
 ];
 
-// Endpoint untuk mendapatkan semua tugas
+// GET all todos
 router.get("/", (req, res) => {
   res.json(todos);
 });
 
-// Endpoint untuk mendapatkan tugas berdasarkan ID
-router.get("/:id", (req, res) => {
-  const todo = todos.find((t) => t.id === parseInt(req.params.id));
-  if (!todo) return res.status(404).send("Tugas tidak ditemukan");
-  res.json(todo);
-});
-
-// Endpoint untuk menambahkan tugas baru
+// POST create todo
 router.post("/", (req, res) => {
+  const { task } = req.body;
+  if (!task) {
+    return res.status(400).json({ error: "Task is required" });
+  }
   const newTodo = {
-    id: todos.length + 1,
-    task: req.body.task,
+    id: todos.length > 0 ? Math.max(...todos.map(t => t.id)) + 1 : 1,
+    task,
+    completed: false
   };
   todos.push(newTodo);
   res.status(201).json(newTodo);
 });
 
-// Endpoint untuk memperbarui tugas
+// PUT update todo
 router.put("/:id", (req, res) => {
-  const todo = todos.find((t) => t.id === parseInt(req.params.id));
-  if (!todo) return res.status(404).send("Tugas tidak ditemukan");
-
-  todo.task = req.body.task;
-  res.json(todo);
+  const id = parseInt(req.params.id);
+  const { task } = req.body;
+  const todoIndex = todos.findIndex(t => t.id === id);
+  if (todoIndex === -1) {
+    return res.status(404).json({ error: "Todo not found" });
+  }
+  todos[todoIndex].task = task;
+  res.json(todos[todoIndex]);
 });
 
-// Endpoint untuk menghapus tugas
-router.delete("/:id", (req, res) => {
-  const todoIndex = todos.findIndex((t) => t.id === parseInt(req.params.id));
-  if (todoIndex === -1) return res.status(404).send("Tugas tidak ditemukan");
+// PATCH complete todo
+router.patch("/:id/complete", (req, res) => {
+  const id = parseInt(req.params.id);
+  const todoIndex = todos.findIndex(t => t.id === id);
+  if (todoIndex === -1) {
+    return res.status(404).json({ error: "Todo not found" });
+  }
+  todos[todoIndex].completed = true;
+  res.json(todos[todoIndex]);
+});
 
-  todos.splice(todoIndex, 1);
-  res.status(204).send();
+// DELETE todo
+router.delete("/:id", (req, res) => {
+  const id = parseInt(req.params.id);
+  const todoIndex = todos.findIndex(t => t.id === id);
+  if (todoIndex === -1) {
+    return res.status(404).json({ error: "Todo not found" });
+  }
+  todos = todos.filter(t => t.id !== id);
+  res.json({ message: "Todo deleted successfully" });
 });
 
 module.exports = router;
-// Tambahkan ini untuk mengekspor data todos juga
 module.exports.todos = todos;
