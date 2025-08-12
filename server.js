@@ -2,12 +2,14 @@ const methodOverride = require("method-override");
 const express = require("express");
 const app = express();
 const cors = require("cors");
-//const port = 3001;
+
 require("dotenv").config();
 const port = process.env.PORT;
 
-const todoRoutes = require("./routes/todo.js");
+const todoRoutes = require("./routes/tododb.js");
 const { todos } = require("./routes/todo.js");
+
+const db = require("./database/db"); // Mengimpor koneksi database
 
 //middleware untuk parsing json dan form
 app.use(express.urlencoded({ extended: true }));
@@ -25,6 +27,15 @@ app.get("/", (req, res) => {
 
 app.get("/contact", (req, res) => {
 res.render("contact");
+});
+
+app.get("/todo-view", (req, res) => {
+  db.query("SELECT * FROM todos", (err, todos) => {
+    if (err) return res.status(500).send("Internal Server Error");
+    res.render("todo", { 
+      todos: todos,
+    });
+  });
 });
 
 //endpoint untuk mendapatkan data todos
